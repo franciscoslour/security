@@ -1,4 +1,4 @@
-package com.amigoscode.secutiry.user.config;
+package com.amigoscode.secutiry.config;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;

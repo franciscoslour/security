@@ -1,4 +1,4 @@
-package com.amigoscode.secutiry.user.config;
+package com.amigoscode.secutiry.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
