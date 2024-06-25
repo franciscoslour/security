@@ -3,11 +3,11 @@ package com.amigoscode.secutiry.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +16,7 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private static final String SECURITY_KEY = "183AB864DF2CA1898744DCEB59A48";
-
+    private static final SecretKey SECURITY_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     public<T> T extractClaim(String token, Function<Claims, T> claimsResolver){
         final Claims claims = extractAllClaims(token);
@@ -32,14 +31,14 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails){
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
-               .setClaims(extraClaims)
-               .setSubject(userDetails.getUsername())
-               .setIssuedAt(new Date(System.currentTimeMillis()))
-               .setExpiration(new Date(System.currentTimeMillis() + 1000 *60*24))
-               .signWith(SignatureAlgorithm.HS256,getSigningKey())
-               .compact();
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .signWith(SECURITY_KEY)
+                .compact();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails){
@@ -55,17 +54,12 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token){
+    private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(SECURITY_KEY)
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
-    }
-
-    private byte[] getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECURITY_KEY);
-        return Keys.hmacShaKeyFor(keyBytes).getEncoded();
     }
 
 }
